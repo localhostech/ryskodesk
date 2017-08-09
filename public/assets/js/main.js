@@ -12,7 +12,12 @@ class RegisterForm extends React.Component {
     super(props);
     this.state = {
       login: '',
-      password: ''
+      email: '',
+      password: '',
+      firstname: '',
+      lastname: '',
+      status: 'manager',
+      spec: 'posting'
     };
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -29,7 +34,8 @@ class RegisterForm extends React.Component {
   }
 
   handleSubmit(event) {
-    alert('A login was submitted: ' + this.state.login + ', a password: ' + this.state.password);
+    console.log(this.state);
+    //alert('A login was submitted: ' + this.state.login + ', a password: ' + this.state.password);
     event.preventDefault();
   }
 
@@ -67,9 +73,9 @@ class RegisterForm extends React.Component {
           <div className="form-group">
             <label>Специальность</label>
             <select className="form-control" value={this.state.spec} name="spec" onChange={this.handleInputChange} type="text">
-              <option value="manager">Посты</option>
-              <option value="admin">Копирайт</option>
-              <option value="admin">Все</option>
+              <option value="posting">Посты</option>
+              <option value="copyright">Копирайт</option>
+              <option value="all">Все</option>
             </select>
           </div>
           <div className="form-group">
@@ -143,14 +149,18 @@ class LoginForm extends React.Component {
     );
   }
 }
-const App = () => (
-  <div>
-    <Switch>
-      <Route exact path='/' component={LoginForm}/>
-      <Route path='/register' component={RegisterForm}/>
-    </Switch>
-  </div>
-)
+class App extends React.Component {
+  render() {
+    return (
+      <div>
+        <Switch>
+          <Route exact path='/' component={LoginForm}/>
+          <Route path='/register' component={RegisterForm}/>
+        </Switch>
+      </div>
+    );
+  }
+}
 
 ReactDOM.render(
   <BrowserRouter>

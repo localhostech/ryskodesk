@@ -5,11 +5,8 @@ app.use(express.static('public'));
 
 app.set('view engine', 'jade');
 
-app.get('/', function (req, res) {
-  res.render('index', { title: 'Hey', message: 'Hello there!'});
-});
-app.get('/register', function (req, res) {
-  res.render('index', { title: 'Hey', message: 'Hello there!'});
+app.get('/:page', function (req, res) {
+  res.render('index', { title: 'RYSKO Desk'});
 });
 
 app.listen(3000, function () {
