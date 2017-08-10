@@ -1,0 +1,6 @@
+{
+  "events": {
+    "start": "./node_modules/.bin/webpack --config webpack.config.js"
+  },
+   "ignore": ["main.compile.js"]
+}
