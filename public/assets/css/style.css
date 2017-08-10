@@ -11,3 +11,11 @@
 a {
     cursor: pointer;
 }
+.task-list {
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+.add-task {
+    padding-top: 30px;
+    padding-bottom: 30px;
+}

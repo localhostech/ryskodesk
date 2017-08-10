@@ -110,7 +110,8 @@ var App = function (_React$Component) {
           null,
           React.createElement(Route, { exact: true, path: "/", component: _forms.LoginForm }),
           React.createElement(Route, { path: "/register", component: _forms.RegisterForm }),
-          React.createElement(Route, { path: "/desk", component: _desk.DeskMain })
+          React.createElement(Route, { path: "/desk", component: _desk.DeskMain }),
+          React.createElement(Route, { path: "/addtask", component: _desk.DeskAddTask })
         )
       );
     }
@@ -459,6 +460,330 @@ exports.LoginForm = LoginForm;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.DeskAddTask = exports.DeskMain = undefined;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _template = __webpack_require__(3);
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _ReactRouterDOM = ReactRouterDOM,
+    HashRouter = _ReactRouterDOM.HashRouter,
+    Switch = _ReactRouterDOM.Switch,
+    Route = _ReactRouterDOM.Route,
+    Link = _ReactRouterDOM.Link,
+    NavLink = _ReactRouterDOM.NavLink,
+    BrowserRouter = _ReactRouterDOM.BrowserRouter,
+    Redirect = _ReactRouterDOM.Redirect;
+
+var TaskBlock = function (_React$Component) {
+  _inherits(TaskBlock, _React$Component);
+
+  function TaskBlock() {
+    _classCallCheck(this, TaskBlock);
+
+    return _possibleConstructorReturn(this, (TaskBlock.__proto__ || Object.getPrototypeOf(TaskBlock)).apply(this, arguments));
+  }
+
+  _createClass(TaskBlock, [{
+    key: "render",
+    value: function render() {
+      return React.createElement(
+        "div",
+        { className: "col-lg-3 col-xl-2" },
+        React.createElement(
+          "div",
+          { className: "card" },
+          React.createElement(
+            "div",
+            { className: "card-block" },
+            React.createElement(
+              "h4",
+              { className: "card-title" },
+              this.props.title
+            ),
+            React.createElement(
+              "p",
+              { className: "card-text" },
+              this.props.description,
+              React.createElement("br", null),
+              "\u0421\u0442\u043E\u0438\u043C\u043E\u0441\u0442\u044C: ",
+              this.props.price,
+              " \u0440\u0443\u0431.",
+              React.createElement("br", null),
+              "\u0421\u0434\u0435\u043B\u0430\u0442\u044C \u0434\u043E: ",
+              this.props.till,
+              React.createElement("br", null)
+            ),
+            React.createElement(
+              "a",
+              { href: "#", className: "btn btn-primary" },
+              "\u041E\u0442\u043A\u0440\u044B\u0442\u044C"
+            )
+          )
+        )
+      );
+    }
+  }]);
+
+  return TaskBlock;
+}(React.Component);
+
+var DeskMain = function (_React$Component2) {
+  _inherits(DeskMain, _React$Component2);
+
+  function DeskMain(props) {
+    _classCallCheck(this, DeskMain);
+
+    var _this2 = _possibleConstructorReturn(this, (DeskMain.__proto__ || Object.getPrototypeOf(DeskMain)).call(this, props));
+
+    _this2.state = {
+      user: {},
+      tasks: []
+    };
+    return _this2;
+  }
+
+  _createClass(DeskMain, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var context = this;
+      fetch("/getUser", {
+        method: "POST",
+        body: JSON.stringify(this.state),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        //console.log(data);
+        context.setState({
+          user: data
+        });
+      });
+      fetch("/getTasks", {
+        method: "POST",
+        body: JSON.stringify(this.state),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        //console.log(data);
+        context.setState({
+          tasks: data
+        });
+      });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var addTask = null;
+      if (this.state.user.status == "admin") {
+        addTask = React.createElement(
+          "div",
+          { className: "col-lg-3 col-xl-2" },
+          React.createElement(
+            "div",
+            { className: "card" },
+            React.createElement(
+              "div",
+              { className: "card-block" },
+              React.createElement(
+                "h4",
+                { className: "card-title" },
+                "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C \u0437\u0430\u0434\u0430\u0447\u0443"
+              ),
+              React.createElement("p", { className: "card-text" }),
+              React.createElement(
+                NavLink,
+                { exact: true, to: "/addtask", className: "btn btn-primary" },
+                "\u0414\u043E\u0431\u0430\u0432\u0438\u0442\u044C"
+              )
+            )
+          )
+        );
+      }
+      var tasksRow = [];
+      this.state.tasks.forEach(function (item, i) {
+        item.till = new Date(item.till);
+        console.log(item.till, _typeof(item.till));
+        item.till = item.till.getDate() + '.' + item.till.getMonth() + '.' + item.till.getFullYear();
+        tasksRow.push(React.createElement(TaskBlock, { key: item._id, title: item.title, description: item.description, till: item.till, price: item.price }));
+      });
+      return React.createElement(
+        "div",
+        null,
+        React.createElement(_template.Navbar, null),
+        React.createElement(
+          "div",
+          { className: "container-fluid" },
+          React.createElement(
+            "div",
+            { className: "task-list" },
+            React.createElement(
+              "div",
+              { className: "row" },
+              tasksRow,
+              addTask
+            )
+          )
+        )
+      );
+    }
+  }]);
+
+  return DeskMain;
+}(React.Component);
+
+var DeskAddTask = function (_React$Component3) {
+  _inherits(DeskAddTask, _React$Component3);
+
+  function DeskAddTask(props) {
+    _classCallCheck(this, DeskAddTask);
+
+    var _this3 = _possibleConstructorReturn(this, (DeskAddTask.__proto__ || Object.getPrototypeOf(DeskAddTask)).call(this, props));
+
+    _this3.state = {
+      title: '',
+      description: '',
+      price: '',
+      till: '',
+      fireRedirect: false
+    };
+
+    _this3.handleInputChange = _this3.handleInputChange.bind(_this3);
+    _this3.handleSubmit = _this3.handleSubmit.bind(_this3);
+    return _this3;
+  }
+
+  _createClass(DeskAddTask, [{
+    key: "handleInputChange",
+    value: function handleInputChange(event) {
+      var target = event.target;
+      var value = target.type === 'checkbox' ? target.checked : target.value;
+      var name = target.name;
+      this.setState(_defineProperty({}, name, value));
+    }
+  }, {
+    key: "handleSubmit",
+    value: function handleSubmit(event) {
+      console.log(this.state);
+      var context = this;
+      var data = new FormData();
+      data.append("json", JSON.stringify(this.state));
+
+      fetch("/addtask", {
+        method: "POST",
+        body: JSON.stringify(this.state),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        var result = data.result;
+        console.log(result);
+        if (result.success) {
+          context.setState({ fireRedirect: true });
+        } else {
+          alert(result.message.message);
+        }
+      });
+      event.preventDefault();
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _ref = this.props.location.state || '/',
+          from = _ref.from;
+
+      var fireRedirect = this.state.fireRedirect;
+
+      return React.createElement(
+        "div",
+        null,
+        React.createElement(_template.Navbar, null),
+        React.createElement(
+          "div",
+          { className: "container-fluid" },
+          React.createElement(
+            "div",
+            { className: "add-task" },
+            React.createElement(
+              "div",
+              { className: "row" },
+              React.createElement(
+                "div",
+                { className: "col-lg-6 col-xl-6" },
+                React.createElement(
+                  "form",
+                  { onSubmit: this.handleSubmit },
+                  React.createElement(
+                    "div",
+                    { className: "form-group" },
+                    React.createElement("input", { className: "form-control", name: "title", value: this.state.title, onChange: this.handleInputChange, placeholder: "\u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A" })
+                  ),
+                  React.createElement(
+                    "div",
+                    { className: "form-group" },
+                    React.createElement("input", { className: "form-control", name: "price", value: this.state.price, onChange: this.handleInputChange, placeholder: "\u0421\u0442\u043E\u0438\u043C\u043E\u0441\u0442\u044C" })
+                  ),
+                  React.createElement(
+                    "div",
+                    { className: "form-group" },
+                    React.createElement("textarea", { className: "form-control", name: "description", value: this.state.description, placeholder: "\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435", onChange: this.handleInputChange })
+                  ),
+                  React.createElement(
+                    "div",
+                    { className: "form-group" },
+                    React.createElement("input", { type: "date", className: "form-control", name: "till", value: this.state.till, onChange: this.handleInputChange, placeholder: "\u0414\u0430\u0442\u0430 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F" })
+                  ),
+                  React.createElement(
+                    "div",
+                    { className: "form-group" },
+                    React.createElement("input", { type: "submit", className: "btn btn-primary", value: "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C" })
+                  )
+                ),
+                fireRedirect && React.createElement(Redirect, { to: from || '/desk' })
+              )
+            )
+          )
+        )
+      );
+    }
+  }]);
+
+  return DeskAddTask;
+}(React.Component);
+
+exports.DeskMain = DeskMain;
+exports.DeskAddTask = DeskAddTask;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -477,16 +802,75 @@ var _ReactRouterDOM = ReactRouterDOM,
     BrowserRouter = _ReactRouterDOM.BrowserRouter,
     Redirect = _ReactRouterDOM.Redirect;
 
-var DeskMain = function (_React$Component) {
-  _inherits(DeskMain, _React$Component);
+var UserNavbar = function (_React$Component) {
+  _inherits(UserNavbar, _React$Component);
 
-  function DeskMain() {
-    _classCallCheck(this, DeskMain);
+  function UserNavbar(props) {
+    _classCallCheck(this, UserNavbar);
 
-    return _possibleConstructorReturn(this, (DeskMain.__proto__ || Object.getPrototypeOf(DeskMain)).apply(this, arguments));
+    var _this = _possibleConstructorReturn(this, (UserNavbar.__proto__ || Object.getPrototypeOf(UserNavbar)).call(this, props));
+
+    _this.state = {
+      user: {}
+    };
+    return _this;
   }
 
-  _createClass(DeskMain, [{
+  _createClass(UserNavbar, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var context = this;
+      fetch("/getUser", {
+        method: "POST",
+        body: JSON.stringify(this.state),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        //console.log(data);
+        context.setState({
+          user: data
+        });
+      });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      return React.createElement(
+        "div",
+        { className: "navbar-nav navbar-user-info" },
+        React.createElement(
+          "a",
+          { className: "nav-item nav-link", href: "#" },
+          this.state.user.firstname,
+          " ",
+          this.state.user.lastname
+        ),
+        React.createElement(
+          "a",
+          { className: "nav-item nav-link", href: "/logout" },
+          "\u0412\u044B\u0439\u0442\u0438"
+        )
+      );
+    }
+  }]);
+
+  return UserNavbar;
+}(React.Component);
+
+var Navbar = function (_React$Component2) {
+  _inherits(Navbar, _React$Component2);
+
+  function Navbar() {
+    _classCallCheck(this, Navbar);
+
+    return _possibleConstructorReturn(this, (Navbar.__proto__ || Object.getPrototypeOf(Navbar)).apply(this, arguments));
+  }
+
+  _createClass(Navbar, [{
     key: "render",
     value: function render() {
       return React.createElement(
@@ -498,8 +882,8 @@ var DeskMain = function (_React$Component) {
           React.createElement("span", { className: "navbar-toggler-icon" })
         ),
         React.createElement(
-          "a",
-          { className: "navbar-brand", href: "#" },
+          Link,
+          { className: "navbar-brand", to: "/desk" },
           "RYSKO Desk"
         ),
         React.createElement(
@@ -509,39 +893,21 @@ var DeskMain = function (_React$Component) {
             "div",
             { className: "navbar-nav mr-auto" },
             React.createElement(
-              "a",
-              { className: "nav-item nav-link", href: "#" },
-              "\u041B\u0435\u043D\u0442\u0430 \u0437\u0430\u0434\u0430\u043D\u0438\u0439 ",
-              React.createElement(
-                "span",
-                { className: "sr-only" },
-                "(current)"
-              )
+              NavLink,
+              { exact: true, className: "nav-item nav-link", to: "/desk" },
+              "\u041B\u0435\u043D\u0442\u0430 \u0437\u0430\u0434\u0430\u043D\u0438\u0439"
             )
           ),
-          React.createElement(
-            "div",
-            { className: "navbar-nav navbar-user-info" },
-            React.createElement(
-              "a",
-              { className: "nav-item nav-link", href: "#" },
-              "\u0416\u0434\u0430\u043D\u043E\u0432 \u0413\u0440\u0438\u0433\u043E\u0440\u0438\u0439"
-            ),
-            React.createElement(
-              "a",
-              { className: "nav-item nav-link", href: "/logout" },
-              "\u0412\u044B\u0439\u0442\u0438"
-            )
-          )
+          React.createElement(UserNavbar, { name: "\u0413\u0440\u0438\u0433\u043E\u0440\u0438\u0439 \u0416\u0434\u0430\u043D\u043E\u0432" })
         )
       );
     }
   }]);
 
-  return DeskMain;
+  return Navbar;
 }(React.Component);
 
-exports.DeskMain = DeskMain;
+exports.Navbar = Navbar;
 
 /***/ })
 /******/ ]);

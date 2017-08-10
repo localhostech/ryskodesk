@@ -1,5 +1,6 @@
 
 var User = require('../models/user');
+var Task = require('../models/task');
 
 module.exports = function(app, passport) {
 
@@ -15,6 +16,17 @@ module.exports = function(app, passport) {
       });
     });
 
+    app.post('/getUser', function(req,res) {
+      res.send(req.user);
+    })
+
+    app.post('/getTasks', function(req,res) {
+      Task.find({}, function(err, tasks) {
+        console.log(tasks);
+        res.send(tasks);
+      })
+    })
+
     app.post('/login', passport.authenticate('local'), function(req, res) {
         console.log(req.user);
         res.send({'result':{'success':true}})
@@ -22,6 +34,22 @@ module.exports = function(app, passport) {
 
     app.get('/register', function (req, res) {
       res.render('index', { title: 'RYSKO Desk'});
+    });
+    app.get('/addtask', function (req, res) {
+      res.render('index', { title: 'RYSKO Desk'});
+    });
+    app.post('/addtask', function (req, res) {
+      var taskData = req.body;
+      taskData['_author'] = req.user._id;
+      var task = new Task(taskData);
+      task.save(function(err) {
+        if (err) {
+          console.log(err)
+          res.send({'result':{'success':false}})
+        } else {
+          res.send({'result':{'success':true}});
+        }
+      });
     });
     app.get('/desk', isLoggedIn, function (req, res) {
       res.render('index', { title: 'RYSKO Desk', user: req.user});
