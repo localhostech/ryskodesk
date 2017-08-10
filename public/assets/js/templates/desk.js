@@ -10,14 +10,43 @@ const {
 
 import {Navbar} from "../components/template.js"
 
+window.tasks = [];
+
+
 class TaskBlock extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.deleteTask = this.deleteTask.bind(this);
+  }
+
+  deleteTask() {
+    var data = {"taskid": this.props.taskid};
+    var context = this;
+    fetch("/removeTask",
+    {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      //console.log(data);
+      context.props.handler();
+    })
+  }
 
   render() {
+
     return (
       <div className="col-lg-3 col-xl-2">
         <div className="card">
             <div className="card-block">
               <h4 className="card-title">{this.props.title}</h4>
+              <span onClick={this.deleteTask} className="lnr lnr-cross delete-task"></span>
               <p className="card-text">
               {this.props.description}<br/>
               Стоимость: {this.props.price} руб.<br/>
@@ -36,8 +65,10 @@ class DeskMain extends React.Component {
     super(props);
     this.state = {
       user: {},
-      tasks: []
+      tasks: tasks
     };
+
+    this.updateTasks = this.updateTasks.bind(this);
   }
 
   componentDidMount() {
@@ -54,14 +85,37 @@ class DeskMain extends React.Component {
     .then(function(res){ return res.json(); })
     .then(function(data){
       //console.log(data);
+      window.user = data;
       context.setState({
         user: data,
       });
     })
+
     fetch("/getTasks",
     {
         method: "POST",
-        body: JSON.stringify(this.state),
+        body: "{}",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      //console.log(data);
+      context.setState({
+        tasks: data,
+      });
+    })
+  }
+
+  updateTasks() {
+    var context = this;
+    
+    fetch("/getTasks",
+    {
+        method: "POST",
+        body: "{}",
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -90,12 +144,10 @@ class DeskMain extends React.Component {
         </div>
       </div>)
     }
+    var context = this;
     var tasksRow = [];
     this.state.tasks.forEach(function(item, i) {
-      item.till = new Date(item.till);
-      console.log(item.till, typeof item.till);
-      item.till = item.till.getDate()+'.'+item.till.getMonth()+'.'+item.till.getFullYear();
-      tasksRow.push(<TaskBlock key={item._id} title={item.title} description={item.description} till={item.till} price={item.price} />);
+      tasksRow.push(<TaskBlock key={item._id} taskid={item._id} title={item.title} handler={context.updateTasks} author={item._author} description={item.description} till={item.till} price={item.price} />);
     })
     return (
       <div>

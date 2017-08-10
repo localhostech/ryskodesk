@@ -26,6 +26,18 @@ module.exports = function(app, passport) {
         res.send(tasks);
       })
     })
+    app.post('/removeTask', function(req,res) {
+      var taskId = req.body.taskid;
+      console.log(taskId);
+      Task.remove({_id:taskId}).exec(function(err) {
+        if (!err) {
+          Task.find({}).sort({created: -1}).exec(function(err, tasks) {
+            console.log(tasks);
+            res.send(tasks);
+          })
+        }
+      })
+    })
 
     app.post('/login', passport.authenticate('local'), function(req, res) {
         console.log(req.user);

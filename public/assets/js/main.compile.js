@@ -218,11 +218,6 @@ var RegisterForm = function (_React$Component) {
       event.preventDefault();
     }
   }, {
-    key: 'renderLoginForm',
-    value: function renderLoginForm() {
-      ReactDOM.render(React.createElement(LoginForm, null), document.getElementById('app'));
-    }
-  }, {
     key: 'render',
     value: function render() {
       var _ref = this.props.location.state || '/',
@@ -400,11 +395,6 @@ var LoginForm = function (_React$Component2) {
       event.preventDefault();
     }
   }, {
-    key: 'renderRegisterForm',
-    value: function renderRegisterForm() {
-      ReactDOM.render(React.createElement(RegisterForm, null), document.getElementById('app'));
-    }
-  }, {
     key: 'render',
     value: function render() {
       var _ref2 = this.props.location.state || '/',
@@ -471,8 +461,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.DeskAddTask = exports.DeskMain = undefined;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _template = __webpack_require__(3);
@@ -494,18 +482,44 @@ var _ReactRouterDOM = ReactRouterDOM,
     BrowserRouter = _ReactRouterDOM.BrowserRouter,
     Redirect = _ReactRouterDOM.Redirect;
 
+
+window.tasks = [];
+
 var TaskBlock = function (_React$Component) {
   _inherits(TaskBlock, _React$Component);
 
-  function TaskBlock() {
+  function TaskBlock(props) {
     _classCallCheck(this, TaskBlock);
 
-    return _possibleConstructorReturn(this, (TaskBlock.__proto__ || Object.getPrototypeOf(TaskBlock)).apply(this, arguments));
+    var _this = _possibleConstructorReturn(this, (TaskBlock.__proto__ || Object.getPrototypeOf(TaskBlock)).call(this, props));
+
+    _this.deleteTask = _this.deleteTask.bind(_this);
+    return _this;
   }
 
   _createClass(TaskBlock, [{
+    key: "deleteTask",
+    value: function deleteTask() {
+      var data = { "taskid": this.props.taskid };
+      var context = this;
+      fetch("/removeTask", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        //console.log(data);
+        context.props.handler();
+      });
+    }
+  }, {
     key: "render",
     value: function render() {
+
       return React.createElement(
         "div",
         { className: "col-lg-3 col-xl-2" },
@@ -520,6 +534,7 @@ var TaskBlock = function (_React$Component) {
               { className: "card-title" },
               this.props.title
             ),
+            React.createElement("span", { onClick: this.deleteTask, className: "lnr lnr-cross delete-task" }),
             React.createElement(
               "p",
               { className: "card-text" },
@@ -557,8 +572,10 @@ var DeskMain = function (_React$Component2) {
 
     _this2.state = {
       user: {},
-      tasks: []
+      tasks: tasks
     };
+
+    _this2.updateTasks = _this2.updateTasks.bind(_this2);
     return _this2;
   }
 
@@ -577,13 +594,36 @@ var DeskMain = function (_React$Component2) {
         return res.json();
       }).then(function (data) {
         //console.log(data);
+        window.user = data;
         context.setState({
           user: data
         });
       });
+
       fetch("/getTasks", {
         method: "POST",
-        body: JSON.stringify(this.state),
+        body: "{}",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
+        //console.log(data);
+        context.setState({
+          tasks: data
+        });
+      });
+    }
+  }, {
+    key: "updateTasks",
+    value: function updateTasks() {
+      var context = this;
+
+      fetch("/getTasks", {
+        method: "POST",
+        body: "{}",
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -626,12 +666,10 @@ var DeskMain = function (_React$Component2) {
           )
         );
       }
+      var context = this;
       var tasksRow = [];
       this.state.tasks.forEach(function (item, i) {
-        item.till = new Date(item.till);
-        console.log(item.till, _typeof(item.till));
-        item.till = item.till.getDate() + '.' + item.till.getMonth() + '.' + item.till.getFullYear();
-        tasksRow.push(React.createElement(TaskBlock, { key: item._id, title: item.title, description: item.description, till: item.till, price: item.price }));
+        tasksRow.push(React.createElement(TaskBlock, { key: item._id, taskid: item._id, title: item.title, handler: context.updateTasks, author: item._author, description: item.description, till: item.till, price: item.price }));
       });
       return React.createElement(
         "div",

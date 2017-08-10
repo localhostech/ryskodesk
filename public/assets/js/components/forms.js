@@ -64,13 +64,6 @@ class RegisterForm extends React.Component {
     event.preventDefault();
   }
 
-  renderLoginForm() {
-    ReactDOM.render(
-      <LoginForm />,
-      document.getElementById('app')
-    );
-  }
-
   render() {
     const { from } = this.props.location.state || '/'
     const { fireRedirect } = this.state
@@ -179,13 +172,6 @@ class LoginForm extends React.Component {
         context.setState({ error: 'Произошла ошибка. Проверьте введенный логин или пароль.' })
     });
     event.preventDefault();
-  }
-
-  renderRegisterForm() {
-    ReactDOM.render(
-      <RegisterForm />,
-      document.getElementById('app')
-    );
   }
 
   render() {
