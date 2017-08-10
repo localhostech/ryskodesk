@@ -351,7 +351,8 @@ var LoginForm = function (_React$Component2) {
     _this2.state = {
       username: '',
       password: '',
-      fireRedirect: false
+      fireRedirect: false,
+      error: ''
     };
 
     _this2.handleInputChange = _this2.handleInputChange.bind(_this2);
@@ -392,6 +393,9 @@ var LoginForm = function (_React$Component2) {
         } else {
           alert(result.message.message);
         }
+      }).catch(function (error) {
+        console.log(error);
+        context.setState({ error: 'Произошла ошибка. Проверьте введенный логин или пароль.' });
       });
       event.preventDefault();
     }
@@ -411,6 +415,11 @@ var LoginForm = function (_React$Component2) {
       return React.createElement(
         'div',
         { className: 'login-form' },
+        React.createElement(
+          'span',
+          { className: 'form-error' },
+          this.state.error
+        ),
         React.createElement(
           'form',
           { onSubmit: this.handleSubmit },

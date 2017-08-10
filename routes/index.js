@@ -21,7 +21,7 @@ module.exports = function(app, passport) {
     })
 
     app.post('/getTasks', function(req,res) {
-      Task.find({}, function(err, tasks) {
+      Task.find({}).sort({created: -1}).exec(function(err, tasks) {
         console.log(tasks);
         res.send(tasks);
       })

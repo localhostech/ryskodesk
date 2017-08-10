@@ -21,7 +21,7 @@ class TaskBlock extends React.Component {
               <p className="card-text">
               {this.props.description}<br/>
               Стоимость: {this.props.price} руб.<br/>
-            Сделать до: {this.props.till}<br/>
+              Сделать до: {this.props.till}<br/>
               </p>
               <a href="#" className="btn btn-primary">Открыть</a>
             </div>

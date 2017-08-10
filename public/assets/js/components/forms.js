@@ -131,7 +131,8 @@ class LoginForm extends React.Component {
     this.state = {
       username: '',
       password: '',
-      fireRedirect: false
+      fireRedirect: false,
+      error: ''
     };
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -173,6 +174,10 @@ class LoginForm extends React.Component {
         alert(result.message.message);
       }
     })
+    .catch(function(error) {
+        console.log(error);
+        context.setState({ error: 'Произошла ошибка. Проверьте введенный логин или пароль.' })
+    });
     event.preventDefault();
   }
 
@@ -188,6 +193,7 @@ class LoginForm extends React.Component {
     const { fireRedirect } = this.state
     return (
       <div className="login-form">
+        <span className="form-error">{this.state.error}</span>
         <form onSubmit={this.handleSubmit}>
           <div className="form-group">
             <input autoComplete="off" className="form-control" value={this.state.username} name="username" onChange={this.handleInputChange} type="text" placeholder="Логин"/>
