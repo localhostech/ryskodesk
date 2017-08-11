@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {BrowserRouter, Route, Link, NavLink, Switch, Redirect} from 'react-router-dom'
-
+import {BrowserRouter, Route, Link, NavLink, Switch, Redirect} from 'react-router-dom';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import Avatar from 'material-ui/Avatar';
 import FileFolder from 'material-ui/svg-icons/file/folder';
@@ -18,6 +17,19 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import MenuItem from 'material-ui/MenuItem';
 import AppBar from 'material-ui/AppBar';
 import TextField from 'material-ui/TextField';
+import areIntlLocalesSupported from 'intl-locales-supported';
+import { createStore } from 'redux'
+
+let DateTimeFormat;
+
+if (areIntlLocalesSupported(['ru-RU'])) {
+  DateTimeFormat = global.Intl.DateTimeFormat;
+} else {
+  const IntlPolyfill = require('intl');
+  DateTimeFormat = IntlPolyfill.DateTimeFormat;
+  require('intl/locale-data/jsonp/ru-RU');
+}
+
 import {
   Step,
   Stepper,
@@ -27,10 +39,13 @@ import {
 import FlatButton from 'material-ui/FlatButton';
 import DatePicker from 'material-ui/DatePicker';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
-import Dialog from 'material-ui/Dialog'
+import Dialog from 'material-ui/Dialog';
 import {Navbar} from "../components/template.js"
 
 import injectTapEventPlugin from 'react-tap-event-plugin';
+
+import {TaskBlock} from '../components/TaskBlock';
+import {FooterNav} from '../components/FooterNav';
 
 window.tasks = [];
 
@@ -79,9 +94,9 @@ class UserNavbar extends React.Component {
     if (this.state.user.firstname) {
       firstletters = this.state.user.firstname[0]+this.state.user.lastname[0];
     }
-    var badgeStyle = {"padding":"0px", "vertical-align": "top",
-    "margin-top": "-12px",
-    "margin-right": "10px"};
+    var badgeStyle = {"padding":"0px", "verticalAlign": "top",
+    "marginTop": "-12px",
+    "marginRight": "10px","color":"#fff"};
     return (
       <div>
       <IconMenu
@@ -93,7 +108,7 @@ class UserNavbar extends React.Component {
             badgeStyle={{top: 0, right: 0}}
           >
             <IconButton tooltip="Уведомления">
-              <NotificationsIcon />
+              <NotificationsIcon color="#fff" />
             </IconButton>
           </Badge>
         }
@@ -120,89 +135,6 @@ class UserNavbar extends React.Component {
         <MenuItem primaryText="Профиль" />
         <MenuItem primaryText={<a href="/logout">Выйти</a>} />
       </IconMenu>
-      </div>
-    )
-  }
-}
-
-class TaskBlock extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false
-    }
-
-    this.handleOpen = this.handleOpen.bind(this);
-    this.handleClose = this.handleClose.bind(this);
-    this.deleteTask = this.deleteTask.bind(this);
-  }
-
-  deleteTask() {
-    var data = {"taskid": this.props.taskid};
-    var context = this;
-    fetch("/removeTask",
-    {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      //console.log(data);
-
-      context.props.handler();
-    })
-  }
-  handleOpen() {
-    this.setState({open: true});
-  }
-
-  handleClose() {
-    this.setState({open: false});
-  }
-  render() {
-    var taskControls = null;
-    const actions = [
-      <FlatButton
-        label="Отмена"
-        primary={true}
-        onTouchTap={this.handleClose}
-      />,
-      <FlatButton
-        label="Удалить"
-        primary={true}
-        onTouchTap={this.deleteTask}
-      />,
-    ];
-    var style= {"margin-bottom": "30px"};
-    return (
-      <div className="col-xl-3">
-        <Card style={style}>
-
-          <CardTitle title={this.props.title} subtitle={this.props.description} />
-          <CardText>
-            <p>
-
-            Стоимость: {this.props.price} руб.<br/>
-            Сделать до: {this.props.till}<br/>
-            </p>
-          </CardText>
-          <Dialog
-            actions={actions}
-            modal={false}
-            open={this.state.open}
-            onRequestClose={this.handleClose}
-          >
-            Вы действительно хотите удалить задание?
-          </Dialog>
-          <CardActions>
-            <FlatButton label="Открыть" />
-            <FlatButton  onTouchTap={this.handleOpen} label="Удалить" />
-          </CardActions>
-        </Card>
       </div>
     )
   }
@@ -459,7 +391,7 @@ class DeskAddTask extends React.Component {
                     rowsMax={4} name="description" value={this.state.description} onChange={this.handleInputChange} floatingLabelText="Описание" hintText="Описание"  />
                   </div>
                   <div className="form-group">
-                    <DatePicker hintText="Дата выполнения" value={this.state.till} onChange={this.handleDateChange} floatingLabelText="Дата выполнения" container="inline" />
+                    <DatePicker DateTimeFormat={DateTimeFormat} locale="ru-RU" okLabel="OK" cancelLabel="Отмена" hintText="Дата выполнения" value={this.state.till} onChange={this.handleDateChange} floatingLabelText="Дата выполнения" container="inline" />
                   </div>
                   {this.renderStepActions(0)}
                 </StepContent>
@@ -512,5 +444,6 @@ class DeskAddTask extends React.Component {
     )
   }
 }
+
 
 export {DeskMain, DeskAddTask};
