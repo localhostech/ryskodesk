@@ -13,6 +13,7 @@ import ReactDOM from 'react-dom';
 import {BrowserRouter, Route, Link, NavLink, Switch, Redirect} from 'react-router-dom'
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import Snackbar from 'material-ui/Snackbar';
 
 import injectTapEventPlugin from 'react-tap-event-plugin';
 

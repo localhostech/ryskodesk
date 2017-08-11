@@ -12,11 +12,22 @@ import RaisedButton from 'material-ui/RaisedButton';
 import Drawer from 'material-ui/Drawer';
 import IconMenu from 'material-ui/IconMenu';
 import IconButton from 'material-ui/IconButton';
+import Badge from 'material-ui/Badge';
+import NotificationsIcon from 'material-ui/svg-icons/social/notifications';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import MenuItem from 'material-ui/MenuItem';
 import AppBar from 'material-ui/AppBar';
+import TextField from 'material-ui/TextField';
+import {
+  Step,
+  Stepper,
+  StepLabel,
+  StepContent,
+} from 'material-ui/Stepper';
+import FlatButton from 'material-ui/FlatButton';
 import DatePicker from 'material-ui/DatePicker';
-
+import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import Dialog from 'material-ui/Dialog'
 import {Navbar} from "../components/template.js"
 
 import injectTapEventPlugin from 'react-tap-event-plugin';
@@ -68,7 +79,31 @@ class UserNavbar extends React.Component {
     if (this.state.user.firstname) {
       firstletters = this.state.user.firstname[0]+this.state.user.lastname[0];
     }
+    var badgeStyle = {"padding":"0px", "vertical-align": "top",
+    "margin-top": "-12px",
+    "margin-right": "10px"};
     return (
+      <div>
+      <IconMenu
+        iconButtonElement={
+          <Badge
+            badgeContent={10}
+            secondary={true}
+            style={badgeStyle}
+            badgeStyle={{top: 0, right: 0}}
+          >
+            <IconButton tooltip="Уведомления">
+              <NotificationsIcon />
+            </IconButton>
+          </Badge>
+        }
+        targetOrigin={{horizontal: 'right', vertical: 'top'}}
+        anchorOrigin={{horizontal: 'right', vertical: 'top'}}
+      >
+        <MenuItem primaryText="Уведомление 1" />
+        <MenuItem primaryText="Уведомление 2" />
+        <MenuItem primaryText="Уведомление 3" />
+      </IconMenu>
       <IconMenu
         iconButtonElement={
           <Avatar
@@ -85,6 +120,7 @@ class UserNavbar extends React.Component {
         <MenuItem primaryText="Профиль" />
         <MenuItem primaryText={<a href="/logout">Выйти</a>} />
       </IconMenu>
+      </div>
     )
   }
 }
@@ -92,7 +128,12 @@ class UserNavbar extends React.Component {
 class TaskBlock extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      open: false
+    }
 
+    this.handleOpen = this.handleOpen.bind(this);
+    this.handleClose = this.handleClose.bind(this);
     this.deleteTask = this.deleteTask.bind(this);
   }
 
@@ -111,26 +152,57 @@ class TaskBlock extends React.Component {
     .then(function(res){ return res.json(); })
     .then(function(data){
       //console.log(data);
+
       context.props.handler();
     })
   }
+  handleOpen() {
+    this.setState({open: true});
+  }
 
+  handleClose() {
+    this.setState({open: false});
+  }
   render() {
     var taskControls = null;
+    const actions = [
+      <FlatButton
+        label="Отмена"
+        primary={true}
+        onTouchTap={this.handleClose}
+      />,
+      <FlatButton
+        label="Удалить"
+        primary={true}
+        onTouchTap={this.deleteTask}
+      />,
+    ];
+    var style= {"margin-bottom": "30px"};
     return (
-      <div className="col-lg-3 col-xl-2">
-        <div className="card">
-            <div className="card-block">
-              <h4 className="card-title">{this.props.title}</h4>
-              <span onClick={this.deleteTask} className="lnr lnr-cross delete-task"></span>
-              <p className="card-text">
-              {this.props.description}<br/>
-              Стоимость: {this.props.price} руб.<br/>
-              Сделать до: {this.props.till}<br/>
-              </p>
-              <a href="#" className="btn btn-primary">Открыть</a>
-            </div>
-        </div>
+      <div className="col-xl-3">
+        <Card style={style}>
+
+          <CardTitle title={this.props.title} subtitle={this.props.description} />
+          <CardText>
+            <p>
+
+            Стоимость: {this.props.price} руб.<br/>
+            Сделать до: {this.props.till}<br/>
+            </p>
+          </CardText>
+          <Dialog
+            actions={actions}
+            modal={false}
+            open={this.state.open}
+            onRequestClose={this.handleClose}
+          >
+            Вы действительно хотите удалить задание?
+          </Dialog>
+          <CardActions>
+            <FlatButton label="Открыть" />
+            <FlatButton  onTouchTap={this.handleOpen} label="Удалить" />
+          </CardActions>
+        </Card>
       </div>
     )
   }
@@ -211,15 +283,18 @@ class DeskMain extends React.Component {
   render() {
     let addTask = null;
     if (this.state.user.status == "admin"){
-      addTask = (<div className="col-lg-3 col-xl-2">
-        <div className="card">
-            <div className="card-block">
-              <h4 className="card-title">Добавить задачу</h4>
-              <p className="card-text">
-              </p>
-              <NavLink exact to="/addtask" className="btn btn-primary">Добавить</NavLink>
-            </div>
-        </div>
+      addTask = (
+      <div className="col-xl-3">
+        <Card>
+
+          <CardTitle title="Добавить задание" />
+          <CardText>
+
+          </CardText>
+          <CardActions>
+            <FlatButton label={<NavLink exact to="/addtask">Добавить</NavLink>} />
+          </CardActions>
+        </Card>
       </div>)
     }
     var context = this;
@@ -255,10 +330,12 @@ class DeskAddTask extends React.Component {
       description: '',
       price: '',
       till: new Date(),
-      fireRedirect: false
+      fireRedirect: false,finished: false,
+      stepIndex: 0,
     };
 
-    this.handleInputChange = this.handleInputChange.bind(this);
+    this.handleNext = this.handleNext.bind(this);
+    this.handlePrev = this.handlePrev.bind(this);
     this.goToMain = this.goToMain.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
@@ -268,19 +345,16 @@ class DeskAddTask extends React.Component {
     this.props.history.push('/desk');
   }
 
-  handleInputChange(event, date) {
-    if (!date) {
+  handleInputChange = (event) => {
       const target = event.target;
-      const value = target.type === 'checkbox' ? target.checked : target.value;
-      const name = target.name;
+      //console.log(target.name, target.value)
       this.setState({
-        [name]: value
+        [target.name]: target.value
       });
-    } else {
-      this.setState({
-        ['till']: date
-      });
-    }
+  }
+
+  handleDateChange = (event, date) => {
+    this.setState({till: date});
   }
 
   handleSubmit(event) {
@@ -304,18 +378,59 @@ class DeskAddTask extends React.Component {
       var result = data.result;
       console.log(result);
       if (result.success) {
-        context.setState({ fireRedirect: true })
+        //context.setState({ fireRedirect: true })
       } else {
         alert(result.message.message);
       }
     })
     event.preventDefault();
   }
+  handleNext() {
+    const {stepIndex} = this.state;
+    this.setState({
+      stepIndex: stepIndex + 1,
+      finished: stepIndex >= 2,
+    });
+  };
 
+  handlePrev() {
+    const {stepIndex} = this.state;
+    if (stepIndex > 0) {
+      this.setState({stepIndex: stepIndex - 1});
+    }
+  };
+  renderStepActions(step) {
+      const {stepIndex} = this.state;
+
+      return (
+        <div style={{margin: '12px 0'}}>
+          <RaisedButton
+            type={stepIndex === 2 ? 'submit' : 'button'}
+            label={stepIndex === 2 ? 'Завершить' : 'Далее'}
+            disableTouchRipple={true}
+            disableFocusRipple={true}
+            primary={true}
+            onTouchTap={this.handleNext}
+            style={{marginRight: 12}}
+          />
+          {step > 0 && (
+            <FlatButton
+              label="Назад"
+              disabled={stepIndex === 0}
+              disableTouchRipple={true}
+              disableFocusRipple={true}
+              onTouchTap={this.handlePrev}
+            />
+          )}
+        </div>
+      );
+    }
   render() {
     const { from } = this.props.location.state || '/'
     const { fireRedirect } = this.state
+    const {finished, stepIndex} = this.state;
     return (
+
       <div>
         <AppBar
           title="RYSKO Desk"
@@ -323,30 +438,73 @@ class DeskAddTask extends React.Component {
           iconElementRight={<UserNavbar />}
         />
         <div className="container-fluid">
+        <div style={{maxWidth: 380, maxHeight: 400, margin: 'auto'}}>
+          <form onSubmit={this.handleSubmit}>
+            <Stepper activeStep={stepIndex} orientation="vertical">
+              <Step>
+                <StepLabel>Заполнните все необходимые поля</StepLabel>
+                <StepContent>
+                  <p>
+                    Заполните поля задания.
+                  </p>
+                  <div className="form-group">
+                    <TextField name="title" value={this.state.title} onChange={this.handleInputChange} hintText="Заголовок"  />
+                  </div>
+                  <div className="form-group">
+                    <TextField type="number" name="price" value={this.state.price} onChange={this.handleInputChange} hintText="Стоимость"  />
+                  </div>
+                  <div className="form-group">
+                    <TextField multiLine={true}
+                    rows={2}
+                    rowsMax={4} name="description" value={this.state.description} onChange={this.handleInputChange} floatingLabelText="Описание" hintText="Описание"  />
+                  </div>
+                  <div className="form-group">
+                    <DatePicker hintText="Дата выполнения" value={this.state.till} onChange={this.handleDateChange} floatingLabelText="Дата выполнения" container="inline" />
+                  </div>
+                  {this.renderStepActions(0)}
+                </StepContent>
+              </Step>
+              <Step>
+                <StepLabel>Назначьте роли</StepLabel>
+                <StepContent>
+                  <p>Роли в задании играют немаловажное значение!</p>
+                  {this.renderStepActions(1)}
+                </StepContent>
+              </Step>
+              <Step>
+                <StepLabel>Сохраните задание</StepLabel>
+                <StepContent>
+                  <p>
+                    Мы почти у цели осталось лишь сохранить задание, но перед этим проверьте правильность заполненных полей!<br/>
+                    Заголовок: {this.state.title}<br/>
+                    Стоимость: {this.state.price}<br/>
+                    Описание: {this.state.description}<br/>
+                  </p>
+                  {this.renderStepActions(2)}
+                </StepContent>
+              </Step>
+            </Stepper>
+          </form>
+          {fireRedirect && (
+            <Redirect to={from || '/desk'}/>
+          )}
+          {finished && (
+            <p style={{margin: '20px 0', textAlign: 'center'}}>
+              Задание успешно создано!
+              <a
+                href="#"
+                onClick={(event) => {
+                  event.preventDefault();
+                  this.setState({stepIndex: 0, finished: false});
+                }}
+              >
+               Создать еще одно.
+              </a>
+            </p>
+          )}
+        </div>
           <div className="add-task">
             <div className="row">
-              <div className="col-lg-6 col-xl-6">
-                <form onSubmit={this.handleSubmit}>
-                  <div className="form-group">
-                    <input className="form-control" name="title" value={this.state.title} onChange={this.handleInputChange} placeholder="Заголовок" />
-                  </div>
-                  <div className="form-group">
-                    <input className="form-control" name="price" value={this.state.price} onChange={this.handleInputChange} placeholder="Стоимость" />
-                  </div>
-                  <div className="form-group">
-                    <textarea className="form-control" name="description"  value={this.state.description} placeholder="Описание"  onChange={this.handleInputChange} />
-                  </div>
-                  <div className="form-group">
-                    <DatePicker hintText="Дата выполнения" value={this.state.till} onChange={this.handleInputChange} container="inline" />
-                  </div>
-                  <div className="form-group">
-                    <input type="submit" className="btn btn-primary" value="Сохранить"/>
-                  </div>
-                </form>
-                {fireRedirect && (
-                  <Redirect to={from || '/desk'}/>
-                )}
-              </div>
             </div>
           </div>
         </div>
