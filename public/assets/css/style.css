@@ -43,3 +43,9 @@ a {
 .delete-task:hover {
     color: #d80202;
 }
+.navbar-inverse .navbar-nav .nav-link {
+    height: 38px;
+}
+.user-avatar {
+    /* margin-top: -10px !important; */
+}

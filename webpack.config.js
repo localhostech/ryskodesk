@@ -1,4 +1,5 @@
 const path = require('path');
+var webpack = require('webpack');
 
 module.exports = {
   entry: './public/assets/js/main.js',
@@ -6,6 +7,20 @@ module.exports = {
     filename: 'main.compile.js',
     path: path.resolve(__dirname, 'public/assets/js')
   },
+  resolve:
+   { extensions:
+      [
+        '.js',
+        '.json',
+        '.jsx',
+        '.html',
+        '.css',
+        '.scss',
+        '.yaml',
+        '.yml' ],
+     modules: [ 'node_modules' ],
+     alias: {},
+     unsafeCache: true },
   module: {
     loaders: [
       {
@@ -17,5 +32,11 @@ module.exports = {
         }
       }
     ]
-  }
+  },
+  plugins: [
+    new webpack.optimize.CommonsChunkPlugin({
+        children: true,
+        async: true,
+    })
+  ]
 };

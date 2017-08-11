@@ -1,17 +1,93 @@
-const {
-  HashRouter,
-  Switch,
-  Route,
-  Link,
-  NavLink,
-  BrowserRouter,
-  Redirect
-} = ReactRouterDOM;
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {BrowserRouter, Route, Link, NavLink, Switch, Redirect} from 'react-router-dom'
+
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import Avatar from 'material-ui/Avatar';
+import FileFolder from 'material-ui/svg-icons/file/folder';
+import FontIcon from 'material-ui/FontIcon';
+import List from 'material-ui/List/List';
+import ListItem from 'material-ui/List/ListItem';
+import RaisedButton from 'material-ui/RaisedButton';
+import Drawer from 'material-ui/Drawer';
+import IconMenu from 'material-ui/IconMenu';
+import IconButton from 'material-ui/IconButton';
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+import MenuItem from 'material-ui/MenuItem';
+import AppBar from 'material-ui/AppBar';
+import DatePicker from 'material-ui/DatePicker';
 
 import {Navbar} from "../components/template.js"
 
+import injectTapEventPlugin from 'react-tap-event-plugin';
+
 window.tasks = [];
 
+import {
+  blue300,
+  indigo900,
+  orange200,
+  deepOrange300,
+  pink400,
+  purple500,
+} from 'material-ui/styles/colors';
+
+const style = {margin: 5};
+
+class UserNavbar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      user: {}
+    };
+  }
+
+  componentDidMount() {
+    var context = this;
+    fetch("/getUser",
+    {
+        method: "POST",
+        body: JSON.stringify(this.state),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      //console.log(data);
+      context.setState({
+        user: data,
+      });
+    })
+  }
+
+
+  render() {
+    var firstletters = null;
+    if (this.state.user.firstname) {
+      firstletters = this.state.user.firstname[0]+this.state.user.lastname[0];
+    }
+    return (
+      <IconMenu
+        iconButtonElement={
+          <Avatar
+            color="#fff"
+            backgroundColor="#607D8B"
+            size={40}
+            style={style}
+            className="user-avatar"
+          >{firstletters}</Avatar>
+        }
+        targetOrigin={{horizontal: 'right', vertical: 'top'}}
+        anchorOrigin={{horizontal: 'right', vertical: 'top'}}
+      >
+        <MenuItem primaryText="Профиль" />
+        <MenuItem primaryText={<a href="/logout">Выйти</a>} />
+      </IconMenu>
+    )
+  }
+}
 
 class TaskBlock extends React.Component {
   constructor(props) {
@@ -40,7 +116,7 @@ class TaskBlock extends React.Component {
   }
 
   render() {
-
+    var taskControls = null;
     return (
       <div className="col-lg-3 col-xl-2">
         <div className="card">
@@ -62,10 +138,12 @@ class TaskBlock extends React.Component {
 
 class DeskMain extends React.Component {
   constructor(props) {
+
     super(props);
     this.state = {
       user: {},
-      tasks: tasks
+      tasks: tasks,
+      open: true
     };
 
     this.updateTasks = this.updateTasks.bind(this);
@@ -111,7 +189,7 @@ class DeskMain extends React.Component {
 
   updateTasks() {
     var context = this;
-    
+
     fetch("/getTasks",
     {
         method: "POST",
@@ -151,7 +229,10 @@ class DeskMain extends React.Component {
     })
     return (
       <div>
-        <Navbar />
+        <AppBar
+          title="RYSKO Desk"
+          iconElementRight={<UserNavbar />}
+        />
         <div className="container-fluid">
           <div className="task-list">
             <div className="row">
@@ -164,6 +245,7 @@ class DeskMain extends React.Component {
     )
   }
 }
+
 class DeskAddTask extends React.Component {
 
   constructor(props) {
@@ -172,21 +254,33 @@ class DeskAddTask extends React.Component {
       title: '',
       description: '',
       price: '',
-      till: '',
+      till: new Date(),
       fireRedirect: false
     };
 
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.goToMain = this.goToMain.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  handleInputChange(event) {
-    const target = event.target;
-    const value = target.type === 'checkbox' ? target.checked : target.value;
-    const name = target.name;
-    this.setState({
-      [name]: value
-    });
+  goToMain(event) {
+    event.preventDefault();
+    this.props.history.push('/desk');
+  }
+
+  handleInputChange(event, date) {
+    if (!date) {
+      const target = event.target;
+      const value = target.type === 'checkbox' ? target.checked : target.value;
+      const name = target.name;
+      this.setState({
+        [name]: value
+      });
+    } else {
+      this.setState({
+        ['till']: date
+      });
+    }
   }
 
   handleSubmit(event) {
@@ -223,7 +317,11 @@ class DeskAddTask extends React.Component {
     const { fireRedirect } = this.state
     return (
       <div>
-        <Navbar />
+        <AppBar
+          title="RYSKO Desk"
+          onTitleTouchTap={this.goToMain}
+          iconElementRight={<UserNavbar />}
+        />
         <div className="container-fluid">
           <div className="add-task">
             <div className="row">
@@ -239,7 +337,7 @@ class DeskAddTask extends React.Component {
                     <textarea className="form-control" name="description"  value={this.state.description} placeholder="Описание"  onChange={this.handleInputChange} />
                   </div>
                   <div className="form-group">
-                    <input type="date" className="form-control" name="till" value={this.state.till} onChange={this.handleInputChange} placeholder="Дата выполнения"/>
+                    <DatePicker hintText="Дата выполнения" value={this.state.till} onChange={this.handleInputChange} container="inline" />
                   </div>
                   <div className="form-group">
                     <input type="submit" className="btn btn-primary" value="Сохранить"/>

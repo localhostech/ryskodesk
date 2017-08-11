@@ -1,12 +1,7 @@
-const {
-  HashRouter,
-  Switch,
-  Route,
-  Link,
-  NavLink,
-  BrowserRouter,
-  Redirect
-} = ReactRouterDOM;
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {BrowserRouter, Route, Link, NavLink, Switch, Redirect} from 'react-router-dom'
+
 
 class RegisterForm extends React.Component {
   constructor(props) {

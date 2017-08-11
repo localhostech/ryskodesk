@@ -1,51 +1,9 @@
-const {
-  HashRouter,
-  Switch,
-  Route,
-  Link,
-  NavLink,
-  BrowserRouter,
-  Redirect
-} = ReactRouterDOM;
-
-class UserNavbar extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      user: {}
-    };
-  }
-
-  componentDidMount() {
-    var context = this;
-    fetch("/getUser",
-    {
-        method: "POST",
-        body: JSON.stringify(this.state),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      //console.log(data);
-      context.setState({
-        user: data,
-      });
-    })
-  }
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {BrowserRouter, Route, Link, NavLink, Switch} from 'react-router-dom'
+import Avatar from 'material-ui/Avatar';
 
 
-  render() {
-    return (
-      <div className="navbar-nav navbar-user-info">
-        <a className="nav-item nav-link" href="#">{this.state.user.firstname} {this.state.user.lastname}</a>
-        <a className="nav-item nav-link" href="/logout">Выйти</a>
-      </div>
-    )
-  }
-}
 
 class Navbar extends React.Component {
   render() {
@@ -59,7 +17,7 @@ class Navbar extends React.Component {
           <div className="navbar-nav mr-auto">
             <NavLink exact className="nav-item nav-link" to="/desk">Лента заданий</NavLink>
           </div>
-          <UserNavbar name="Григорий Жданов" />
+          <UserNavbar />
         </div>
       </nav>
     )
