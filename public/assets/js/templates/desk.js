@@ -391,7 +391,7 @@ class DeskAddTask extends React.Component {
                     rowsMax={4} name="description" value={this.state.description} onChange={this.handleInputChange} floatingLabelText="Описание" hintText="Описание"  />
                   </div>
                   <div className="form-group">
-                    <DatePicker DateTimeFormat={DateTimeFormat} locale="ru-RU" okLabel="OK" cancelLabel="Отмена" hintText="Дата выполнения" value={this.state.till} onChange={this.handleDateChange} floatingLabelText="Дата выполнения" container="inline" />
+                    <DatePicker DateTimeFormat={DateTimeFormat} locale="ru-RU" okLabel="ОК" cancelLabel="Отмена" hintText="Дата выполнения" value={this.state.till} onChange={this.handleDateChange} floatingLabelText="Дата выполнения" container="inline" />
                   </div>
                   {this.renderStepActions(0)}
                 </StepContent>
