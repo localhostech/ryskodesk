@@ -49,3 +49,13 @@ a {
 .user-avatar {
     /* margin-top: -10px !important; */
 }
+.task-page-content {
+    padding: 70px 30px;
+}
+.task-card {
+    cursor: pointer;
+}
+
+.task-card:hover {
+    background-color: #e7e7e7 !important;
+}

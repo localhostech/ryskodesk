@@ -9,12 +9,16 @@ export class TaskBlock extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false
+      open: false,
+      doneopen: false
     }
     this.handleTaskPage = this.handleTaskPage.bind(this);
     this.handleOpen = this.handleOpen.bind(this);
+    this.handleDoneClose = this.handleDoneOpen.bind(this);
+    this.handleDoneOpen = this.handleDoneOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.deleteTask = this.deleteTask.bind(this);
+    this.doneTask = this.deleteTask.bind(this);
   }
 
   deleteTask() {
@@ -36,15 +40,41 @@ export class TaskBlock extends React.Component {
       context.props.handler();
     })
   }
+  doneTask() {
+    var data = {"taskid": this.props.taskid};
+    var context = this;
+    /*fetch("/removeTask",
+    {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      //console.log(data);
+
+      context.props.handler();
+    })
+    */
+  }
   handleOpen() {
     this.setState({open: true});
   }
+  handleDoneOpen() {
+    this.setState({doneopen: true});
+  }
   handleTaskPage() {
-    history.push('/task/'+this.props.taskid);
+    this.props.history.push('/task/'+this.props.taskid);
   }
 
   handleClose() {
     this.setState({open: false});
+  }
+  handleDoneClose() {
+    this.setState({doneopen: false});
   }
   render() {
     var taskControls = null;
@@ -60,10 +90,22 @@ export class TaskBlock extends React.Component {
         onTouchTap={this.deleteTask}
       />,
     ];
+    const doneActions = [
+      <FlatButton
+        label="Отмена"
+        primary={true}
+        onTouchTap={this.handleDoneClose}
+      />,
+      <FlatButton
+        label="Отправить"
+        primary={true}
+        onTouchTap={this.doneTask}
+      />,
+    ];
     var style= {"marginBottom": "30px"};
     return (
       <div className="col-xl-3">
-        <Card style={style}>
+        <Card className="task-card" style={style}>
 
           <CardTitle  onTouchTap={this.handleTaskPage} title={this.props.title} subtitle={this.props.description} />
           <CardText  onTouchTap={this.handleTaskPage}>
@@ -81,9 +123,17 @@ export class TaskBlock extends React.Component {
           >
             Вы действительно хотите удалить задание?
           </Dialog>
+          <Dialog
+            actions={doneActions}
+            modal={false}
+            open={this.state.doneopen}
+            onRequestClose={this.handleDoneClose}
+          >
+            Введите сообщение для ответсвенного
+          </Dialog>
           <CardActions>
-            <FlatButton label="Открыть" />
-            <FlatButton  onTouchTap={this.handleOpen} label="Удалить" />
+            {this.props.admins && <FlatButton  onTouchTap={this.handleOpen} label="Удалить" />}
+            {this.props.implements && <FlatButton  onTouchTap={this.handleDoneOpen} label="Выполнить" />}
           </CardActions>
         </Card>
       </div>

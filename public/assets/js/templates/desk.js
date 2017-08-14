@@ -14,11 +14,16 @@ import IconButton from 'material-ui/IconButton';
 import Badge from 'material-ui/Badge';
 import NotificationsIcon from 'material-ui/svg-icons/social/notifications';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+import MenuIcon from 'material-ui/svg-icons/navigation/menu';
 import MenuItem from 'material-ui/MenuItem';
 import AppBar from 'material-ui/AppBar';
 import TextField from 'material-ui/TextField';
+import Paper from 'material-ui/Paper';
+import Subheader from 'material-ui/Subheader';
+import CommunicationChatBubble from 'material-ui/svg-icons/communication/chat-bubble';
 import areIntlLocalesSupported from 'intl-locales-supported';
-import { createStore } from 'redux'
+import Checkbox from 'material-ui/Checkbox';
+import { createStore } from 'redux';
 
 let DateTimeFormat;
 
@@ -46,6 +51,9 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 
 import {TaskBlock} from '../components/TaskBlock';
 import {FooterNav} from '../components/FooterNav';
+import { browserHistory } from 'react-router'
+import { createBrowserHistory } from 'history'
+const history = createBrowserHistory()
 
 window.tasks = [];
 
@@ -232,14 +240,25 @@ class DeskMain extends React.Component {
     var context = this;
     var tasksRow = [];
     this.state.tasks.forEach(function(item, i) {
-      tasksRow.push(<TaskBlock key={item._id} taskid={item._id} title={item.title} handler={context.updateTasks} author={item._author} description={item.description} till={item.till} price={item.price} />);
+      tasksRow.push(<TaskBlock admins={context.state.user._id == item._responsible} implements={context.state.user._id == item._implements} history={context.props.history} key={item._id} taskid={item._id} title={item.title} handler={context.updateTasks} author={item._author} description={item.description} till={item.till} price={item.price} />);
     })
     return (
       <div>
         <AppBar
           title="RYSKO Desk"
+          iconElementLeft={<IconMenu
+            iconButtonElement={
+              <MenuIcon style={{margin: "12px", color: "#fff"}} />
+            }
+            targetOrigin={{horizontal: 'left', vertical: 'top'}}
+            anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+          >
+            <NavLink exact to="/desk"><MenuItem primaryText="Главная" /></NavLink>
+            <NavLink exact to="/mytasks"><MenuItem primaryText="Мои задания" /></NavLink>
+          </IconMenu>}
           iconElementRight={<UserNavbar />}
         />
+
         <div className="container-fluid">
           <div className="task-list">
             <div className="row">
@@ -253,6 +272,179 @@ class DeskMain extends React.Component {
   }
 }
 
+class DeskUserTasks extends React.Component {
+  constructor(props) {
+
+    super(props);
+    this.state = {
+      user: {},
+      tasks: tasks,
+      open: true
+    };
+
+    this.updateTasks = this.updateTasks.bind(this);
+  }
+
+  componentDidMount() {
+    var context = this;
+    fetch("/getUser",
+    {
+        method: "POST",
+        body: JSON.stringify(this.state),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      //console.log(data);
+      window.user = data;
+      context.setState({
+        user: data,
+      });
+    })
+
+    fetch("/getTasks",
+    {
+        method: "POST",
+        body: JSON.stringify({"userOnly": true}),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      //console.log(data);
+      context.setState({
+        tasks: data,
+      });
+    })
+  }
+
+  updateTasks() {
+    var context = this;
+
+    fetch("/getTasks",
+    {
+        method: "POST",
+        body: JSON.stringify({"userOnly": true}),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      //console.log(data);
+      context.setState({
+        tasks: data,
+      });
+    })
+  }
+
+  render() {
+    var context = this;
+    var tasksRow = [];
+    this.state.tasks.forEach(function(item, i) {
+      tasksRow.push(<TaskBlock admins={context.state.user._id == item._responsible} implements={context.state.user._id == item._implements} history={context.props.history} key={item._id} taskid={item._id} title={item.title} handler={context.updateTasks} author={item._author} description={item.description} till={item.till} price={item.price} />);
+    })
+    return (
+      <div>
+        <AppBar
+          title="RYSKO Desk"
+          iconElementLeft={<IconMenu
+            iconButtonElement={
+              <MenuIcon style={{margin: "12px", color: "#fff"}} />
+            }
+            targetOrigin={{horizontal: 'left', vertical: 'top'}}
+            anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+          >
+            <NavLink exact to="/desk"><MenuItem primaryText="Главная" /></NavLink>
+            <NavLink exact to="/mytasks"><MenuItem primaryText="Мои задания" /></NavLink>
+          </IconMenu>}
+          iconElementRight={<UserNavbar />}
+        />
+
+        <div className="container-fluid">
+          <div className="task-list">
+            <div className="row">
+              {tasksRow}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+}
+
+const paperStyle = {
+  height: "auto",
+  width: "100%"
+};
+
+class DeskTaskPage extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = {
+        'open':true,
+        task: {}
+      };
+
+      this.goToMain = this.goToMain.bind(this);
+    }
+    goToMain(event) {
+      event.preventDefault();
+      this.props.history.push('/desk');
+    }
+
+    componentDidMount() {
+      var context = this;
+      //console.log(this.props);
+      fetch("/getTask",
+      {
+          method: "POST",
+          body: JSON.stringify({'id':context.props.match.params['taskid']}),
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }, credentials: "same-origin"
+      })
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        console.log(data);
+        context.setState({
+          task: data,
+        });
+      })
+    }
+
+    render() {
+      return (
+        <div>
+          <AppBar
+            title="RYSKO Desk"
+            onTitleTouchTap={this.goToMain}
+            iconElementRight={<UserNavbar />}
+          />
+          <div className="container">
+            <Paper style={paperStyle} zDepth={1} rounded={false}>
+              <div className="task-page-content">
+                <h1>{this.state.task.title}</h1>
+                <p>
+                  {this.state.task.description}<br/>
+                  Стоимость: {this.state.task.price} руб.<br/>
+                  Сделать до: {this.state.task.till}<br/>
+                </p>
+              </div>
+            </Paper>
+          </div>
+        </div>
+      )
+    }
+}
+
 class DeskAddTask extends React.Component {
 
   constructor(props) {
@@ -264,14 +456,37 @@ class DeskAddTask extends React.Component {
       till: new Date(),
       fireRedirect: false,finished: false,
       stepIndex: 0,
+      users: [],
+      _responsible: '',
+      _implements: ''
     };
 
     this.handleNext = this.handleNext.bind(this);
+    this.handleUserChoose = this.handleUserChoose.bind(this);
     this.handlePrev = this.handlePrev.bind(this);
     this.goToMain = this.goToMain.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
-
+  componentDidMount() {
+    var context = this;
+    //console.log(this.props);
+    fetch("/getUsers",
+    {
+        method: "POST",
+        body: JSON.stringify({}),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      console.log(data);
+      context.setState({
+        users: data,
+      });
+    })
+  }
   goToMain(event) {
     event.preventDefault();
     this.props.history.push('/desk');
@@ -325,6 +540,16 @@ class DeskAddTask extends React.Component {
     });
   };
 
+  handleUserChoose(event, isChecked) {
+    console.log(event.target, isChecked);
+    console.log(event.target.name);
+    if (isChecked) {
+      this.setState({
+        [event.target.name]: event.target.id
+      });
+    }
+  }
+
   handlePrev() {
     const {stepIndex} = this.state;
     if (stepIndex > 0) {
@@ -358,9 +583,39 @@ class DeskAddTask extends React.Component {
       );
     }
   render() {
+    var context = this;
     const { from } = this.props.location.state || '/'
     const { fireRedirect } = this.state
     const {finished, stepIndex} = this.state;
+    let userList = [];
+    let managerList = [];
+    this.state.users.forEach((user) => {
+      userList.push(<ListItem
+        key={user._id}
+        primaryText={user.firstname+" "+user.lastname}
+        leftAvatar={<Avatar
+          color="#fff"
+          backgroundColor="#607D8B"
+          size={40}
+        >{user.firstname[0]+user.lastname[0]}</Avatar>}
+        rightIcon={<Checkbox id={user._id} name="_implements" onCheck={context.handleUserChoose} />}
+      />)
+
+    });
+    this.state.users.forEach((user) => {
+      managerList.push(<ListItem
+        key={user._id}
+        primaryText={user.firstname+" "+user.lastname}
+        leftAvatar={<Avatar
+          color="#fff"
+          backgroundColor="#607D8B"
+          size={40}
+        >{user.firstname[0]+user.lastname[0]}</Avatar>}
+        rightIcon={<Checkbox id={user._id} name="_responsible" onCheck={context.handleUserChoose} />}
+      />)
+
+    });
+    console.log(userList);
     return (
 
       <div>
@@ -400,6 +655,15 @@ class DeskAddTask extends React.Component {
                 <StepLabel>Назначьте роли</StepLabel>
                 <StepContent>
                   <p>Роли в задании играют немаловажное значение!</p>
+
+                  <List className="responsible-list">
+                    <Subheader>ВuserListыберите ответственного</Subheader>
+                    {managerList}
+                  </List>
+                  <List className="implementors-list">
+                    <Subheader>Выберите исполнителя (опционально)</Subheader>
+                    {userList}
+                  </List>
                   {this.renderStepActions(1)}
                 </StepContent>
               </Step>
@@ -446,4 +710,4 @@ class DeskAddTask extends React.Component {
 }
 
 
-export {DeskMain, DeskAddTask};
+export {DeskMain, DeskAddTask, DeskTaskPage, DeskUserTasks};

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {BrowserRouter, Route, Link, NavLink, Switch, Redirect} from 'react-router-dom'
-
+import { browserHistory } from 'react-router';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import Snackbar from 'material-ui/Snackbar';
 
@@ -17,7 +17,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 
 
 import {LoginForm, RegisterForm} from "./components/forms.js";
-import {DeskMain, DeskAddTask} from "./templates/desk.js";
+import {DeskMain, DeskAddTask, DeskTaskPage, DeskUserTasks} from "./templates/desk.js";
 
 const muiTheme = getMuiTheme({
   palette: {
@@ -44,6 +44,8 @@ class App extends React.Component {
           <Route path='/register' component={RegisterForm}/>
           <Route path='/desk' component={DeskMain}/>
           <Route path='/addtask' component={DeskAddTask}/>
+          <Route path='/mytasks' component={DeskUserTasks}/>
+          <Route path='/task/:taskid' component={DeskTaskPage}/>
         </Switch>
       </MuiThemeProvider>
     );

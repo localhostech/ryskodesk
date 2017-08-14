@@ -16,16 +16,42 @@ module.exports = function(app, passport) {
       });
     });
 
+
     app.post('/getUser', function(req,res) {
       res.send(req.user);
+    });
+
+    app.post('/getUsers', function(req,res) {
+      User.find({}).exec(function(err, users) {
+        console.log(users);
+        res.send(users);
+      })
     })
 
     app.post('/getTasks', function(req,res) {
-      Task.find({}).sort({created: -1}).exec(function(err, tasks) {
+      if (!req.body.userOnly) {
+        Task.find({}).sort({created: -1}).exec(function(err, tasks) {
+          console.log(tasks);
+          res.send(tasks);
+        })
+      } else {
+        Task.find({$or: [{_responsible: req.user._id}, {_implements: req.user._id}]}).sort({created: -1}).exec(function(err, tasks) {
+          console.log(tasks);
+          res.send(tasks);
+        })
+      }
+    })
+
+    /* Retrieve one task */
+    app.post('/getTask', function(req,res) {
+      var taskId = req.body.id;
+
+      Task.findOne({_id:taskId}).exec(function(err, tasks) {
         console.log(tasks);
         res.send(tasks);
       })
     })
+
     app.post('/removeTask', function(req,res) {
       var taskId = req.body.taskid;
       console.log(taskId);
@@ -42,6 +68,13 @@ module.exports = function(app, passport) {
     app.post('/login', passport.authenticate('local'), function(req, res) {
         console.log(req.user);
         res.send({'result':{'success':true}})
+    });
+
+    app.get('/task/:taskid', function (req, res) {
+      res.render('index', { title: 'RYSKO Desk'});
+    });
+    app.get('/mytasks', function (req, res) {
+      res.render('index', { title: 'RYSKO Desk'});
     });
 
     app.get('/register', function (req, res) {

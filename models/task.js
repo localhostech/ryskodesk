@@ -6,6 +6,8 @@ var taskSchema = mongoose.Schema({
     price     : Number,
     description: String,
     till: Date,
+    _responsible: mongoose.Schema.Types.ObjectId,
+    _implements: mongoose.Schema.Types.ObjectId,
     created:  {
         type: Date,
         // `Date.now()` returns the current unix timestamp as a number
