@@ -26,7 +26,7 @@ module.exports = function(app, passport) {
         console.log(users);
         res.send(users);
       })
-    })
+    });
 
     app.post('/getTasks', function(req,res) {
       if (!req.body.userOnly) {
@@ -63,7 +63,20 @@ module.exports = function(app, passport) {
           })
         }
       })
-    })
+    });
+
+    app.post('/doneTask', function(req,res) {
+      var taskId = req.body.taskid;
+      console.log(taskId);
+      Task.update({_id:taskId}, { $set: { doneMessage: req.body.message }}).exec(function(err) {
+        if (!err) {
+          Task.find({}).sort({created: -1}).exec(function(err, tasks) {
+            console.log(tasks);
+            res.send(tasks);
+          })
+        }
+      })
+    });
 
     app.post('/login', passport.authenticate('local'), function(req, res) {
         console.log(req.user);

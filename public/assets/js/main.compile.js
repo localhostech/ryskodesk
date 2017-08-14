@@ -42848,7 +42848,7 @@ var DeskMain = function (_React$Component2) {
       var context = this;
       var tasksRow = [];
       this.state.tasks.forEach(function (item, i) {
-        tasksRow.push(_react2.default.createElement(_TaskBlock.TaskBlock, { admins: context.state.user._id == item._responsible, 'implements': context.state.user._id == item._implements, history: context.props.history, key: item._id, taskid: item._id, title: item.title, handler: context.updateTasks, author: item._author, description: item.description, till: item.till, price: item.price }));
+        tasksRow.push(_react2.default.createElement(_TaskBlock.TaskBlock, { message: item.doneMessage, admins: context.state.user._id == item._responsible, 'implements': context.state.user._id == item._implements, history: context.props.history, key: item._id, taskid: item._id, title: item.title, handler: context.updateTasks, author: item._author, description: item.description, till: item.till, price: item.price }));
       });
       return _react2.default.createElement(
         'div',
@@ -42978,7 +42978,7 @@ var DeskUserTasks = function (_React$Component3) {
       var context = this;
       var tasksRow = [];
       this.state.tasks.forEach(function (item, i) {
-        tasksRow.push(_react2.default.createElement(_TaskBlock.TaskBlock, { admins: context.state.user._id == item._responsible, 'implements': context.state.user._id == item._implements, history: context.props.history, key: item._id, taskid: item._id, title: item.title, handler: context.updateTasks, author: item._author, description: item.description, till: item.till, price: item.price }));
+        tasksRow.push(_react2.default.createElement(_TaskBlock.TaskBlock, { message: item.doneMessage, admins: context.state.user._id == item._responsible, 'implements': context.state.user._id == item._implements, history: context.props.history, key: item._id, taskid: item._id, title: item.title, handler: context.updateTasks, author: item._author, description: item.description, till: item.till, price: item.price }));
       });
       return _react2.default.createElement(
         'div',
@@ -56276,6 +56276,10 @@ var _Dialog = __webpack_require__(134);
 
 var _Dialog2 = _interopRequireDefault(_Dialog);
 
+var _TextField = __webpack_require__(205);
+
+var _TextField2 = _interopRequireDefault(_TextField);
+
 var _reactRouter = __webpack_require__(20);
 
 var _history = __webpack_require__(214);
@@ -56300,15 +56304,17 @@ var TaskBlock = exports.TaskBlock = function (_React$Component) {
 
     _this.state = {
       open: false,
-      doneopen: false
+      doneopen: false,
+      message: ''
     };
     _this.handleTaskPage = _this.handleTaskPage.bind(_this);
     _this.handleOpen = _this.handleOpen.bind(_this);
-    _this.handleDoneClose = _this.handleDoneOpen.bind(_this);
+    _this.handleDoneClose = _this.handleDoneClose.bind(_this);
     _this.handleDoneOpen = _this.handleDoneOpen.bind(_this);
     _this.handleClose = _this.handleClose.bind(_this);
+    _this.messageHandler = _this.messageHandler.bind(_this);
     _this.deleteTask = _this.deleteTask.bind(_this);
-    _this.doneTask = _this.deleteTask.bind(_this);
+    _this.doneTask = _this.doneTask.bind(_this);
     return _this;
   }
 
@@ -56335,23 +56341,23 @@ var TaskBlock = exports.TaskBlock = function (_React$Component) {
   }, {
     key: 'doneTask',
     value: function doneTask() {
-      var data = { "taskid": this.props.taskid };
+      var data = { "taskid": this.props.taskid, "message": this.state.message };
       var context = this;
-      /*fetch("/removeTask",
-      {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }, credentials: "same-origin"
-      })
-      .then(function(res){ return res.json(); })
-      .then(function(data){
+      fetch("/doneTask", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }, credentials: "same-origin"
+      }).then(function (res) {
+        return res.json();
+      }).then(function (data) {
         //console.log(data);
-         context.props.handler();
-      })
-      */
+
+        context.props.handler();
+        context.handleDoneClose();
+      });
     }
   }, {
     key: 'handleOpen',
@@ -56367,6 +56373,12 @@ var TaskBlock = exports.TaskBlock = function (_React$Component) {
     key: 'handleTaskPage',
     value: function handleTaskPage() {
       this.props.history.push('/task/' + this.props.taskid);
+    }
+  }, {
+    key: 'messageHandler',
+    value: function messageHandler(event) {
+      console.log(event.target.value);
+      this.setState({ message: event.target.value });
     }
   }, {
     key: 'handleClose',
@@ -56420,10 +56432,11 @@ var TaskBlock = exports.TaskBlock = function (_React$Component) {
               _react2.default.createElement('br', null),
               '\u0421\u0434\u0435\u043B\u0430\u0442\u044C \u0434\u043E: ',
               this.props.till,
-              _react2.default.createElement('br', null)
+              _react2.default.createElement('br', null),
+              this.props.message && this.props.message.length > 0 && "Выполнено: " + this.props.message
             )
           ),
-          _react2.default.createElement(
+          this.props.admins && _react2.default.createElement(
             _Dialog2.default,
             {
               actions: actions,
@@ -56441,7 +56454,15 @@ var TaskBlock = exports.TaskBlock = function (_React$Component) {
               open: this.state.doneopen,
               onRequestClose: this.handleDoneClose
             },
-            '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0434\u043B\u044F \u043E\u0442\u0432\u0435\u0442\u0441\u0432\u0435\u043D\u043D\u043E\u0433\u043E'
+            '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0434\u043B\u044F \u043E\u0442\u0432\u0435\u0442\u0441\u0432\u0435\u043D\u043D\u043E\u0433\u043E',
+            _react2.default.createElement('br', null),
+            _react2.default.createElement(_TextField2.default, {
+              hintText: '\u041E\u0442\u0432\u0435\u0442\u0441\u0432\u0435\u043D\u043D\u044B\u0439 \u0437\u0430 \u043F\u0440\u043E\u0432\u0435\u0440\u043A\u0443 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F \u0443\u0432\u0438\u0434\u0438\u0442 \u044D\u0442\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435.',
+              multiLine: true,
+              rows: 2,
+              rowsMax: 4,
+              onChange: this.messageHandler
+            })
           ),
           _react2.default.createElement(
             _Card.CardActions,

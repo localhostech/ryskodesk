@@ -240,7 +240,7 @@ class DeskMain extends React.Component {
     var context = this;
     var tasksRow = [];
     this.state.tasks.forEach(function(item, i) {
-      tasksRow.push(<TaskBlock admins={context.state.user._id == item._responsible} implements={context.state.user._id == item._implements} history={context.props.history} key={item._id} taskid={item._id} title={item.title} handler={context.updateTasks} author={item._author} description={item.description} till={item.till} price={item.price} />);
+      tasksRow.push(<TaskBlock message={item.doneMessage} admins={context.state.user._id == item._responsible} implements={context.state.user._id == item._implements} history={context.props.history} key={item._id} taskid={item._id} title={item.title} handler={context.updateTasks} author={item._author} description={item.description} till={item.till} price={item.price} />);
     })
     return (
       <div>
@@ -348,7 +348,7 @@ class DeskUserTasks extends React.Component {
     var context = this;
     var tasksRow = [];
     this.state.tasks.forEach(function(item, i) {
-      tasksRow.push(<TaskBlock admins={context.state.user._id == item._responsible} implements={context.state.user._id == item._implements} history={context.props.history} key={item._id} taskid={item._id} title={item.title} handler={context.updateTasks} author={item._author} description={item.description} till={item.till} price={item.price} />);
+      tasksRow.push(<TaskBlock message={item.doneMessage} admins={context.state.user._id == item._responsible} implements={context.state.user._id == item._implements} history={context.props.history} key={item._id} taskid={item._id} title={item.title} handler={context.updateTasks} author={item._author} description={item.description} till={item.till} price={item.price} />);
     })
     return (
       <div>

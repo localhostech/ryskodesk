@@ -13,7 +13,8 @@ var taskSchema = mongoose.Schema({
         // `Date.now()` returns the current unix timestamp as a number
         default: Date.now
       },
-    _author: mongoose.Schema.Types.ObjectId
+    _author: mongoose.Schema.Types.ObjectId,
+    doneMessage: String
 });
 
 
