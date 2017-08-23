@@ -10,7 +10,9 @@ var userSchema = mongoose.Schema({
     firstname: String,
     lastname: String,
     spec: String,
-    status: String
+    balance: Number,
+    status: String,
+    last: Date
 });
 
 userSchema.plugin(passportLocalMongoose);

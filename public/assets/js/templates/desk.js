@@ -17,6 +17,7 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import MenuIcon from 'material-ui/svg-icons/navigation/menu';
 import MenuItem from 'material-ui/MenuItem';
 import AppBar from 'material-ui/AppBar';
+import SelectField from 'material-ui/SelectField';
 import TextField from 'material-ui/TextField';
 import Paper from 'material-ui/Paper';
 import Subheader from 'material-ui/Subheader';
@@ -51,8 +52,9 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 
 import {TaskBlock} from '../components/TaskBlock';
 import {FooterNav} from '../components/FooterNav';
-import { browserHistory } from 'react-router'
-import { createBrowserHistory } from 'history'
+import { browserHistory } from 'react-router';
+import { createBrowserHistory } from 'history';
+import {rysko} from '../utils/functions';
 const history = createBrowserHistory()
 
 window.tasks = [];
@@ -78,22 +80,11 @@ class UserNavbar extends React.Component {
 
   componentDidMount() {
     var context = this;
-    fetch("/getUser",
-    {
-        method: "POST",
-        body: JSON.stringify(this.state),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      //console.log(data);
+    rysko.api("getUser", this.state, function(data) {
       context.setState({
         user: data,
       });
-    })
+    });
   }
 
 
@@ -163,61 +154,28 @@ class DeskMain extends React.Component {
 
   componentDidMount() {
     var context = this;
-    fetch("/getUser",
-    {
-        method: "POST",
-        body: JSON.stringify(this.state),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      //console.log(data);
+    rysko.api("getUser", this.state, function(data) {
       window.user = data;
       context.setState({
         user: data,
       });
-    })
-
-    fetch("/getTasks",
-    {
-        method: "POST",
-        body: "{}",
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      //console.log(data);
+    });
+    rysko.api("getTasks", {}, function(data) {
+      window.user = data;
       context.setState({
         tasks: data,
       });
-    })
+    });
   }
 
   updateTasks() {
     var context = this;
-
-    fetch("/getTasks",
-    {
-        method: "POST",
-        body: "{}",
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      //console.log(data);
+    rysko.api("getTasks", {}, function(data) {
+      window.user = data;
       context.setState({
         tasks: data,
       });
-    })
+    });
   }
 
   render() {
@@ -287,61 +245,27 @@ class DeskUserTasks extends React.Component {
 
   componentDidMount() {
     var context = this;
-    fetch("/getUser",
-    {
-        method: "POST",
-        body: JSON.stringify(this.state),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      //console.log(data);
+    rysko.api("getUser", {}, function(data) {
       window.user = data;
       context.setState({
         user: data,
       });
-    })
-
-    fetch("/getTasks",
-    {
-        method: "POST",
-        body: JSON.stringify({"userOnly": true}),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      //console.log(data);
+    });
+    rysko.api("getTasks", {}, function(data) {
       context.setState({
         tasks: data,
       });
-    })
+    });
   }
 
   updateTasks() {
     var context = this;
 
-    fetch("/getTasks",
-    {
-        method: "POST",
-        body: JSON.stringify({"userOnly": true}),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      //console.log(data);
+    rysko.api("getTasks", {"userOnly": true}, function(data) {
       context.setState({
         tasks: data,
       });
-    })
+    });
   }
 
   render() {
@@ -402,22 +326,12 @@ class DeskTaskPage extends React.Component {
     componentDidMount() {
       var context = this;
       //console.log(this.props);
-      fetch("/getTask",
-      {
-          method: "POST",
-          body: JSON.stringify({'id':context.props.match.params['taskid']}),
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }, credentials: "same-origin"
-      })
-      .then(function(res){ return res.json(); })
-      .then(function(data){
+      rysko.api("getTask", {'id':context.props.match.params['taskid']}, function(data) {
         console.log(data);
         context.setState({
           task: data,
         });
-      })
+      });
     }
 
     render() {
@@ -458,7 +372,8 @@ class DeskAddTask extends React.Component {
       stepIndex: 0,
       users: [],
       _responsible: '',
-      _implements: ''
+      _implements: '',
+      type: ''
     };
 
     this.handleNext = this.handleNext.bind(this);
@@ -466,26 +381,17 @@ class DeskAddTask extends React.Component {
     this.handlePrev = this.handlePrev.bind(this);
     this.goToMain = this.goToMain.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleSelectChange = this.handleSelectChange.bind(this);
   }
   componentDidMount() {
     var context = this;
     //console.log(this.props);
-    fetch("/getUsers",
-    {
-        method: "POST",
-        body: JSON.stringify({}),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
+    rysko.api("getUsers", {}, function(data) {
       console.log(data);
       context.setState({
         users: data,
       });
-    })
+    });
   }
   goToMain(event) {
     event.preventDefault();
@@ -510,18 +416,7 @@ class DeskAddTask extends React.Component {
     var data = new FormData();
     data.append( "json", JSON.stringify( this.state ) );
 
-
-    fetch("/addtask",
-    {
-        method: "POST",
-        body: JSON.stringify(this.state),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }, credentials: "same-origin"
-    })
-    .then(function(res){ return res.json(); })
-    .then(function(data){
+    rysko.api("addtask", this.state, function(data) {
       var result = data.result;
       console.log(result);
       if (result.success) {
@@ -529,7 +424,8 @@ class DeskAddTask extends React.Component {
       } else {
         alert(result.message.message);
       }
-    })
+    });
+
     event.preventDefault();
   }
   handleNext() {
@@ -582,6 +478,10 @@ class DeskAddTask extends React.Component {
         </div>
       );
     }
+  handleSelectChange(event, index, value) {
+
+    this.setState({'type': value});
+  }
   render() {
     var context = this;
     const { from } = this.props.location.state || '/'
@@ -636,6 +536,19 @@ class DeskAddTask extends React.Component {
                   </p>
                   <div className="form-group">
                     <TextField name="title" value={this.state.title} onChange={this.handleInputChange} hintText="Заголовок"  />
+                  </div>
+                  <div className="form-group">
+                    <SelectField
+                      floatingLabelText="Тип задания"
+                      value={this.state.type}
+                      onChange={this.handleSelectChange}
+                    >
+                      <MenuItem value={1} primaryText="Текст" />
+                      <MenuItem value={2} primaryText="Картинка" />
+                      <MenuItem value={3} primaryText="Контент план" />
+                      <MenuItem value={4} primaryText="Пост" />
+                      <MenuItem value={5} primaryText="Видео / гифка" />
+                    </SelectField>
                   </div>
                   <div className="form-group">
                     <TextField type="number" name="price" value={this.state.price} onChange={this.handleInputChange} hintText="Стоимость"  />

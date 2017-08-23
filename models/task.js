@@ -6,7 +6,7 @@ var taskSchema = mongoose.Schema({
     price     : Number,
     description: String,
     till: Date,
-    _responsible: mongoose.Schema.Types.ObjectId,
+    _responsible: [{ type : mongoose.Schema.Types.ObjectId}],
     _implements: mongoose.Schema.Types.ObjectId,
     created:  {
         type: Date,
@@ -14,7 +14,9 @@ var taskSchema = mongoose.Schema({
         default: Date.now
       },
     _author: mongoose.Schema.Types.ObjectId,
-    doneMessage: String
+    doneMessage: String,
+    type: [{ type : mongoose.Schema.Types.ObjectId}],
+    status: String
 });
 
 
