@@ -1,6 +1,6 @@
 export var rysko = {
   api: function(method, params, callback) {
-    fetch("/"+method,
+    fetch("/api/"+method,
     {
         method: "POST",
         body: JSON.stringify(params),
@@ -11,7 +11,7 @@ export var rysko = {
     })
     .then(function(res){ return res.json(); })
     .then(function(data){
-      callback(data);
+      callback(data.result);
     });
   }
 }

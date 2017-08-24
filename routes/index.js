@@ -15,67 +15,144 @@ module.exports = function(app, passport) {
           }
       });
     });
+    app.post('/api/:method', function(req, res) {
+      var result = [];
+      var message = "";
+      var success = false;
+      switch (req.params.method) {
+        case "getTasks":
+          /*
+            Get all tasks;
+          */
+          console.log('Gettin tasks');
+          if (!req.body.userOnly) {
+            /*
+              Return all tasks;
+            */
+            Task.find({}).sort({created: -1}).exec(function(err, tasks) {
+              console.log(tasks);
+              result = tasks;
+              success = true;
+              respond();
+            })
+          } else {
+            /*
+              Return only tasks where user is responsible or implementor
+            */
+            Task.find({$or: [{_responsible: req.user._id}, {_implements: req.user._id}]}).sort({created: -1}).exec(function(err, tasks) {
+              console.log(tasks);
+              result = tasks;
+              success = true;
+              respond();
+            })
+          }
+          break;
+        case "getUser":
+          /*
+            Get current user from session
+          */
+          if (req.user) {
+            success = true;
+            result = req.user;
+          } else {
+            success = false;
+            message = "User is not found";
+          }
+          respond();
+          break;
+        case "getUsers":
+          /*
+            Get all users;
+          */
+          User.find({}).exec(function(err, users) {
+            console.log(users);
+            if (!err) {
+                result = users;
+                success = true;
+            } else {
+                success = false;
+                message = err;
+            }
+            respond();
+          });
+          break;
 
+        case "getTask":
+          /*
+            Get task by id
+          */
+          var taskId = req.body.id;
 
-    app.post('/getUser', function(req,res) {
-      res.send(req.user);
-    });
-
-    app.post('/getUsers', function(req,res) {
-      User.find({}).exec(function(err, users) {
-        console.log(users);
-        res.send(users);
-      })
-    });
-
-    app.post('/getTasks', function(req,res) {
-      if (!req.body.userOnly) {
-        Task.find({}).sort({created: -1}).exec(function(err, tasks) {
-          console.log(tasks);
-          res.send(tasks);
-        })
-      } else {
-        Task.find({$or: [{_responsible: req.user._id}, {_implements: req.user._id}]}).sort({created: -1}).exec(function(err, tasks) {
-          console.log(tasks);
-          res.send(tasks);
-        })
+          Task.findOne({_id:taskId}).exec(function(err, task) {
+            console.log(task);
+            result = task;
+            success = true;
+            respond();
+          });
+          break;
+        case "removeTask":
+          /*
+            Remove task by id
+          */
+          var taskId = req.body.taskid;
+          console.log(taskId);
+          Task.remove({_id:taskId}).exec(function(err) {
+            if (!err) {
+              Task.find({}).sort({created: -1}).exec(function(err, tasks) {
+                result = tasks;
+                success = true;
+                respond();
+              })
+            }
+          })
+          break;
+        case "doneTask":
+          /*
+            Mark task as done
+          */
+          var taskId = req.body.taskid;
+          console.log(taskId);
+          Task.update({_id:taskId}, { $set: { doneMessage: req.body.message }}).exec(function(err) {
+            if (!err) {
+              Task.find({}).sort({created: -1}).exec(function(err, tasks) {
+                console.log(tasks);
+                result = tasks;
+                success = true;
+                respond();
+              })
+            }
+          })
+          break;
+        case "addtask":
+          /*
+            Add task to database;
+          */
+          var taskData = req.body;
+          taskData['_author'] = req.user._id;
+          var task = new Task(taskData);
+          task.save(function(err) {
+            if (err) {
+              console.log(err)
+              success = false;
+              respond();
+            } else {
+              success = true;
+              respond();
+            }
+          });
+          break;
+        default:
+          /*
+            Default throwback if requred method does not exist
+          */
+          result = [];
+          message = "API Method is invalid";
+          success = false;
+          respond();
       }
-    })
-
-    /* Retrieve one task */
-    app.post('/getTask', function(req,res) {
-      var taskId = req.body.id;
-
-      Task.findOne({_id:taskId}).exec(function(err, tasks) {
-        console.log(tasks);
-        res.send(tasks);
-      })
-    })
-
-    app.post('/removeTask', function(req,res) {
-      var taskId = req.body.taskid;
-      console.log(taskId);
-      Task.remove({_id:taskId}).exec(function(err) {
-        if (!err) {
-          Task.find({}).sort({created: -1}).exec(function(err, tasks) {
-            console.log(tasks);
-            res.send(tasks);
-          })
-        }
-      })
-    });
-
-    app.post('/doneTask', function(req,res) {
-      var taskId = req.body.taskid;
-      console.log(taskId);
-      Task.update({_id:taskId}, { $set: { doneMessage: req.body.message }}).exec(function(err) {
-        if (!err) {
-          Task.find({}).sort({created: -1}).exec(function(err, tasks) {
-            console.log(tasks);
-            res.send(tasks);
-          })
-        }
-      })
+      function respond() {
+          res.send({success: success, result: result, message: message});
+      }
     });
 
     app.post('/login', passport.authenticate('local'), function(req, res) {
@@ -96,19 +173,7 @@ module.exports = function(app, passport) {
     app.get('/addtask', function (req, res) {
       res.render('index', { title: 'RYSKO Desk'});
     });
-    app.post('/addtask', function (req, res) {
-      var taskData = req.body;
-      taskData['_author'] = req.user._id;
-      var task = new Task(taskData);
-      task.save(function(err) {
-        if (err) {
-          console.log(err)
-          res.send({'result':{'success':false}})
-        } else {
-          res.send({'result':{'success':true}});
-        }
-      });
-    });
+
     app.get('/desk', isLoggedIn, function (req, res) {
       res.render('index', { title: 'RYSKO Desk', user: req.user});
     });
